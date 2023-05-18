@@ -5,48 +5,26 @@ passwd:
   - name: core
     ssh_authorized_keys:
       - ssh-rsa ...
+storage:
+  files:
+   - path: /etc/containers/systemd/at-warrior.container
+     contents:
+       inline: |
+         [Unit]
+         Description=Archive Team Warrior Container
+         After=network-online.target
+
+         [Container]
+         ContainerName=at-warrior
+         Image=atdr.meo.ws/archiveteam/warrior-dockerfile
+         Label=io.containers.autoupdate=registry
+         Volume=at-warrior-projects:/home/warrior/projects
+         Environment=SELECTED_PROJECT=auto
+         Environment=DOWNLOADER=<username>
+
+         [Install]
+         WantedBy=multi-user.target
 systemd:
   units:
     - name: podman-auto-update.timer
       enabled: true
-    - name: at-warrior.service
-      enabled: true
-      contents: |
-        [Unit]
-        Description=Archive Warrior Container
-        Wants=network-online.target
-        After=network-online.target
-        RequiresMountsFor=%t/containers
-
-        [Service]
-        Environment=PODMAN_SYSTEMD_UNIT=%n
-        Restart=on-failure
-        TimeoutStopSec=70
-        ExecStart=/usr/bin/podman run \
-                -e SELECTED_PROJECT=auto \
-                -e DOWNLOADER=rageear \
-                --cidfile=%t/%n.ctr-id \
-                --cgroups=no-conmon \
-                --rm \
-                --sdnotify=conmon \
-                -d \
-                --replace \
-                --name at-warrior \
-                --label=io.containers.autoupdate=registry \
-                --publish 8001:8001 \
-                --volume at-warrior-projects:/home/warrior/projects atdr.meo.ws/archiveteam/warrior-dockerfile
-        ExecStop=/usr/bin/podman stop \
-                --ignore -t 10 \
-                --cidfile=%t/%n.ctr-id
-        ExecStopPost=/usr/bin/podman rm \
-                -f \
-                --ignore -t 10 \
-                --cidfile=%t/%n.ctr-id
-        Type=notify
-        NotifyAccess=all
-
-        [Install]
-        WantedBy=default.target
-
-        [Service]
-        TimeoutStopFailureMode=abort
