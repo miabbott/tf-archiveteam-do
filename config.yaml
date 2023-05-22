@@ -7,23 +7,25 @@ passwd:
       - ssh-rsa ...
 storage:
   files:
-   - path: /etc/containers/systemd/at-warrior.container
-     contents:
-       inline: |
-         [Unit]
-         Description=Archive Team Warrior Container
-         After=network-online.target
+    - path: /etc/containers/systemd/at-warrior.container
+      contents:
+        inline: |
+          [Unit]
+          Description=Archive Team Warrior Container
+          Wants=network-online.target
+          After=network-online.target
 
-         [Container]
-         ContainerName=at-warrior
-         Image=atdr.meo.ws/archiveteam/warrior-dockerfile
-         Label=io.containers.autoupdate=registry
-         Volume=at-warrior-projects:/home/warrior/projects
-         Environment=SELECTED_PROJECT=auto
-         Environment=DOWNLOADER=<username>
+          [Container]
+          ContainerName=at-warrior
+          Image=atdr.meo.ws/archiveteam/warrior-dockerfile
+          Label=io.containers.autoupdate=registry
+          Volume=at-warrior-projects:/home/warrior/projects
+          Environment=SELECTED_PROJECT=auto
+          Environment=DOWNLOADER=<username>
+          Environment=CONCURRENT_ITEMS=6
 
-         [Install]
-         WantedBy=multi-user.target
+          [Install]
+          WantedBy=multi-user.target
 systemd:
   units:
     - name: podman-auto-update.timer
